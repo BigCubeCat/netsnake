@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"snake/internal/game"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
