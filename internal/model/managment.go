@@ -1,5 +1,9 @@
 package model
 
+func (g *Game) MoveSnake(id, dir int) {
+	g.ChangeDirection(id, Direction(dir))
+}
+
 // ChangeDirection изменяет направление змейки.
 func (g *Game) ChangeDirection(snakeID int, newDir Direction) {
 	for _, snake := range g.State.Snakes {

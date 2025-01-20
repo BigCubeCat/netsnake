@@ -4,6 +4,15 @@ import (
 	"math/rand"
 )
 
+type Role int
+
+const (
+	Viewer Role = iota
+	Normal
+	Master
+	Deputy
+)
+
 // Direction представляет направление движения змейки.
 type Direction int
 
@@ -23,6 +32,7 @@ type Point struct {
 // Snake представляет змейку.
 type Snake struct {
 	ID        int
+	Role      Role
 	Body      []Point
 	Direction Direction
 	Score     int
