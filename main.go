@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/bigcubecat/netsnake/internal/config"
+	"github.com/bigcubecat/netsnake/internal/model"
+	"github.com/bigcubecat/netsnake/internal/ui"
+	"github.com/bigcubecat/netsnake/internal/utils"
 	"os"
-	"snake/internal/config"
-	"snake/internal/model"
-	"snake/internal/ui"
-	"snake/internal/utils"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"

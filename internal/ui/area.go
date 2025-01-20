@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"snake/internal/utils"
+	"github.com/bigcubecat/netsnake/internal/utils"
 
 	"github.com/charmbracelet/lipgloss"
 )

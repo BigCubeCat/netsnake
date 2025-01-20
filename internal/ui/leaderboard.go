@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"snake/internal/utils"
+	"github.com/bigcubecat/netsnake/internal/utils"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"

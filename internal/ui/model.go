@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"snake/internal/model"
+	"github.com/bigcubecat/netsnake/internal/model"
 
 	"time"
 )

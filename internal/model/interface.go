@@ -1,7 +1,7 @@
 package model
 
 import (
-	"snake/internal/common"
+	"github.com/bigcubecat/netsnake/internal/common"
 	"sort"
 )
 
