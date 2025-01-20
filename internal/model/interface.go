@@ -1,6 +1,9 @@
 package model
 
-import "snake/internal/common"
+import (
+	"snake/internal/common"
+	"sort"
+)
 
 func (g *Game) Field() [][]int {
 	field := make([][]int, g.State.Height)
@@ -40,15 +43,15 @@ func (g *Game) Field() [][]int {
 func (g *Game) LiderBoard() []common.SnakeScore {
 	var leaderboard []common.SnakeScore
 	for _, snake := range g.State.Snakes {
-		if snake.Role == Viewer {
-			continue
-		}
 		leaderboard = append(leaderboard, common.SnakeScore{
 			UserId: snake.ID,
 			Score:  snake.Score,
 			Alive:  snake.IsAlive,
 		})
 	}
+	sort.Slice(leaderboard, func(i, j int) bool {
+		return leaderboard[i].Score > leaderboard[j].Score
+	})
 	return leaderboard
 }
 
