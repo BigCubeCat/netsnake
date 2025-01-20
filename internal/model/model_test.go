@@ -1,6 +1,7 @@
 package model_test
 
 import (
+	// "fmt"
 	"snake/internal/model"
 	"testing"
 )
@@ -104,27 +105,6 @@ func TestIsGameOver(t *testing.T) {
 	}
 }
 
-// TestCollisionHandling checks collision detection and handling.
-func TestCollisionHandling(t *testing.T) {
-	// g := model.NewGame(10, 10, 1)
-	// g.AddSnake(1)
-	// snake := g.State.Snakes[0]
-	// // Move snake to collide with itself
-	// snake.Body = append(snake.Body, snake.Body[0])
-	// g.MoveSnakes()
-	// if snake.IsAlive {
-	// 	t.Error("Snake should be dead after colliding with itself")
-	// }
-	// // Move snake to collide with another snake
-	// g.AddSnake(2)
-	// secondSnake := g.State.Snakes[1]
-	// secondSnake.Body[0] = snake.Body[0]
-	// g.MoveSnakes()
-	// if secondSnake.IsAlive {
-	// 	t.Error("Second snake should be dead after collision")
-	// }
-}
-
 // TestToroidalField checks the toroidal field behavior.
 func TestToroidalField(t *testing.T) {
 	g := model.NewGame(10, 10, 1)
@@ -170,5 +150,63 @@ func TestHandleCollision(t *testing.T) {
 	// Check if some food is added
 	if len(g.State.Food) < 1 {
 		t.Error("Expected some food to be added after collision")
+	}
+}
+
+func TestField(t *testing.T) {
+	g := model.NewGame(10, 10, 1)
+	g.AddSnake(2)
+	g.MoveSnakes()
+	snake := g.State.Snakes[0]
+	field := g.Field()
+
+	foodCount := 0
+	for _, row := range field {
+		for _, cell := range row {
+			if cell == 1 {
+				foodCount++
+			}
+		}
+	}
+	expectedFood := g.FoodStatic + len(g.State.Snakes)
+	if foodCount != expectedFood {
+		t.Errorf("Expected %d food items, got %d", expectedFood, foodCount)
+	}
+
+	for _, part := range snake.Body {
+		x := part.X % g.State.Width
+		y := part.Y % g.State.Height
+		if field[y][x] != snake.ID {
+			t.Errorf("Expected cell (%d,%d) to be %d, got %d", x, y, snake.ID, field[y][x])
+		}
+	}
+}
+
+func TestFieldToroidal(t *testing.T) {
+	g := model.NewGame(10, 10, 1)
+	g.AddSnake(1)
+	snake := g.State.Snakes[0]
+	snake.Body[0] = model.Point{-1, -1}
+	field := g.Field()
+	x := (-1 + g.State.Width) % g.State.Width
+	y := (-1 + g.State.Height) % g.State.Height
+	if field[y][x] != snake.ID {
+		t.Errorf("Expected cell (%d,%d) to be %d, got %d",
+			x,
+			y,
+			snake.ID, field[y][x],
+		)
+	}
+}
+
+func TestFieldCollision(t *testing.T) {
+	g := model.NewGame(10, 10, 1)
+	g.AddSnake(1)
+	g.AddSnake(2)
+	g.State.Snakes[1].Body[0] = g.State.Snakes[0].Body[0]
+	field := g.Field()
+	cellValue := field[g.State.Snakes[0].Body[0].Y][g.State.Snakes[0].Body[0].X]
+	if cellValue != g.State.Snakes[1].ID {
+		t.Errorf("Expected cell to be %d, got %d", g.State.Snakes[1].ID, cellValue)
 	}
 }
