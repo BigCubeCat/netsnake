@@ -13,6 +13,13 @@ const (
 	Deputy
 )
 
+type SnakeState int
+
+const (
+	ALIVE SnakeState = iota
+	ZOMBIE
+)
+
 // Direction представляет направление движения змейки.
 type Direction int
 

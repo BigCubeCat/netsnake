@@ -60,8 +60,8 @@ func main() {
 	userId := utils.RandRange(2, 765)
 	otherId := utils.RandRange(2, 765)
 	fmt.Println("userID = ", userId)
-	game.AddSnake(userId)
-	game.AddSnake(otherId)
+	game.AddSnake(userId, model.Master)
+	game.AddSnake(otherId, model.Normal)
 
 	game.MoveSnakes()
 

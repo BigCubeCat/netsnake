@@ -85,9 +85,9 @@ func (m uiModel) View() string {
 				row = append(row,
 					lipgloss.NewStyle().Background(
 						lipgloss.Color(
-							"#AFFFAF",
+							utils.IntToHexColor(cellValue),
 						),
-					).Render("  "),
+					).Render("🎲"),
 				)
 			} else {
 				row = append(row,

@@ -1,10 +1,15 @@
 package model
 
-// AddSnake добавляет новую змейку на поле.
-func (g *Game) AddSnake(id int) bool {
-	// Ищем квадрат 5x5 для размещения змейки
-	// yStart := utils.RandRange(0, g.State.Height-5)
-	// xStart := utils.RandRange(0, g.State.Width-5)
+func (g *Game) AddSnake(id int, role Role) bool {
+	if role == Viewer {
+		// Viewer snakes have no body
+		snake := &Snake{
+			ID:   id,
+			Role: Viewer,
+		}
+		g.State.Snakes = append(g.State.Snakes, snake)
+		return true
+	}
 	for y := 0; y < g.State.Height; y++ {
 		for x := 0; x < g.State.Width; x++ {
 			if g.canPlaceSnake(x, y) {
@@ -12,7 +17,7 @@ func (g *Game) AddSnake(id int) bool {
 				tail := g.randomTailPosition(head)
 				snake := &Snake{
 					ID:        id,
-					Role:      Master,
+					Role:      role,
 					Body:      []Point{head, tail},
 					Direction: g.oppositeDirection(head, tail),
 					Score:     0,

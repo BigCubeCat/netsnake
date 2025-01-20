@@ -19,9 +19,9 @@ func (g *Game) Field() [][]int {
 		field[y][x] = 1
 	}
 	for _, snake := range g.State.Snakes {
-		// if snake.Role == Viewer {
-		// 	continue
-		// }
+		if snake.Role == Viewer {
+			continue
+		}
 		for _, part := range snake.Body {
 			x := part.X % g.State.Width
 			y := part.Y % g.State.Height
