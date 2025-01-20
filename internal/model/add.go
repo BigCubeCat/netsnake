@@ -12,6 +12,7 @@ func (g *Game) AddSnake(id int) bool {
 				tail := g.randomTailPosition(head)
 				snake := &Snake{
 					ID:        id,
+					Role:      Master,
 					Body:      []Point{head, tail},
 					Direction: g.oppositeDirection(head, tail),
 					Score:     0,
