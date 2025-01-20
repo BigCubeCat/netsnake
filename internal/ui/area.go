@@ -23,7 +23,7 @@ func (m uiModel) viewGameField() string {
 						lipgloss.Color(
 							utils.IntToHexColor(cellValue),
 						),
-					).Render("🎲"),
+					).Render("🎱"),
 				)
 			} else {
 				row = append(row,

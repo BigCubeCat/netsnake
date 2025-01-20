@@ -57,8 +57,8 @@ func main() {
 	)
 
 	// Добавляем змейку
-	userId := utils.RandRange(2, 765)
-	otherId := utils.RandRange(2, 765)
+	userId := utils.RandRange(2, 16581375)
+	otherId := utils.RandRange(2, 16581375)
 	fmt.Println("userID = ", userId)
 	game.AddSnake(userId, model.Master)
 	game.AddSnake(otherId, model.Normal)
