@@ -3,7 +3,6 @@ package network
 import (
 	"context"
 	"net"
-	"sync"
 
 	"github.com/bigcubecat/netsnake/internal/config"
 	protocol "github.com/bigcubecat/netsnake/proto"
@@ -16,15 +15,15 @@ type AnnouncementController struct {
 	conn          net.Conn // соединение для прослушивания
 	address       net.Addr // мультикаст адрес
 	MulticastAddr string
-	lock          sync.Mutex
 
-	messages []*protocol.GameMessage
+	inboxMessageQueue chan MessagePromise
 }
 
 func NewAnnouncementController(ctx *context.Context, address string) *AnnouncementController {
 	return &AnnouncementController{
-		ctx:           ctx,
-		MulticastAddr: address,
+		ctx:               ctx,
+		MulticastAddr:     address,
+		inboxMessageQueue: make(chan MessagePromise, 100),
 	}
 }
 
@@ -58,29 +57,27 @@ func (ac *AnnouncementController) process() {
 
 	buf := make([]byte, config.BUFFER_SIZE)
 	for {
-		n, _, err := conn.ReadFromUDP(buf)
+		n, remoteAddr, err := conn.ReadFromUDP(buf)
 		logrus.Debugf("recieve %d bytes\n", n)
 		if err != nil {
 			logrus.Printf("Ошибка при чтении: %v", err)
 			continue
 		}
-
 		var msg protocol.GameMessage
 		err = proto.Unmarshal(buf[:n], &msg)
 		if err != nil {
 			logrus.Printf("Ошибка десериализации: %v", err)
 			continue
 		}
-		ac.lock.Lock()
-		ac.messages = append(ac.messages, &msg)
-		ac.lock.Unlock()
+		ac.inboxMessageQueue <- MessagePromise{Message: &msg, Address: remoteAddr.IP.String(), Port: remoteAddr.Port}
 	}
 }
 
-func (ac *AnnouncementController) ReadInbox() []*protocol.GameMessage {
-	ac.lock.Lock()
-	defer ac.lock.Unlock()
-	result := ac.messages
-	ac.messages = []*protocol.GameMessage{}
+func (ac *AnnouncementController) ReadInbox() []MessagePromise {
+	n := len(ac.inboxMessageQueue)
+	result := make([]MessagePromise, n)
+	for i := 0; i < n; i++ {
+		result[i] = <-ac.inboxMessageQueue
+	}
 	return result
 }

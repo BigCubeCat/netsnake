@@ -33,6 +33,8 @@ type Peer struct {
 	msgSeq   *atomic.Int64
 
 	step uint8 // шаг [0, 10)
+
+	masterFound bool
 }
 
 func NewPeer(g *model.Game, conf *config.Config) *Peer {

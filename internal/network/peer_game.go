@@ -18,6 +18,11 @@ func (peer *Peer) JoinPlayer(joinMsg *protocol.GameMessage_JoinMsg, address stri
 	id := utils.RandomId()
 	playerName := joinMsg.GetPlayerName()
 	role := joinMsg.GetRequestedRole()
+	for _, v := range peer.Players {
+		if v.Name == playerName {
+			return
+		}
+	}
 	peer.Players[id] = common.Player{
 		ID:        id,
 		Role:      roleToMode(role),
@@ -27,7 +32,7 @@ func (peer *Peer) JoinPlayer(joinMsg *protocol.GameMessage_JoinMsg, address stri
 		Score:     0,
 	}
 	if role != protocol.NodeRole_VIEWER {
-		peer.GameInstance.AddSnake(peer.ID, model.Normal)
+		peer.GameInstance.AddSnake(id, model.Normal)
 	}
 	peer.messageController.AddMessage(
 		address,

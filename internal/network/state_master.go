@@ -19,11 +19,12 @@ func (state PeerMasterState) Process(peer *Peer) {
 
 	multicastInbox := peer.annoncementController.ReadInbox()
 	for _, recvMessage := range multicastInbox {
-		switch recvMessage.GetType().(type) {
+		switch recvMessage.Message.GetType().(type) {
 		case *protocol.GameMessage_Discover:
 			// TODO: сделать операцию на определение DEPUTY
 			logrus.Debug("discover message recv")
-			state.sendAnnMsg(peer) // делаем спам рассылку с новостями
+			// делаем спам рассылку с новостями
+			state.sendAnnMsgUnicast(peer, recvMessage.Address, recvMessage.Port)
 		}
 	}
 	unicastInbox := peer.messageController.ReadInbox()
@@ -38,6 +39,11 @@ func (state PeerMasterState) Process(peer *Peer) {
 			)
 		}
 	}
+	logrus.Debugln(
+		"state master process ",
+		multicastInbox,
+		unicastInbox,
+	)
 }
 
 // рассылка сообщения по мультикасту
@@ -57,6 +63,21 @@ func (state PeerMasterState) sendAnnMsg(peer *Peer) {
 		peer.Config.CliConfig.MulticastPort,
 		msg,
 	)
+}
+
+// рассылка сообщения по мультикасту
+func (state PeerMasterState) sendAnnMsgUnicast(peer *Peer, address string, port int) {
+	msg := message.NewAnnouncementMessage(
+		peer.Config.CliConfig.PlayerName,
+		peer.Config.CliConfig.GameName,
+		int32(peer.Config.EnvConfig.FieldWidth),
+		int32(peer.Config.EnvConfig.FieldHeight),
+		int32(peer.Config.EnvConfig.FoodStatic),
+		int32(peer.Config.EnvConfig.Dt),
+		peer.Role,
+		state.generatePlayers(peer),
+	)
+	peer.messageController.AddMessage(address, port, msg)
 }
 
 // Ack msg

@@ -10,12 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type MessagePromise struct {
-	Address string
-	Port    int
-	Message *protocol.GameMessage
-}
-
 type MessageController struct {
 	conn    *net.UDPConn
 	ctx     *context.Context
