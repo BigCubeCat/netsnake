@@ -11,6 +11,7 @@ func (state PeerJoinState) Process(peer *Peer) {
 	msg := message.NewDiscoverMsg(peer.msgSeq.Load())
 	peer.messageController.AddMessage(
 		peer.Config.CliConfig.MulticastAddress,
+		peer.Config.CliConfig.MulticastPort,
 		msg,
 	)
 
@@ -26,13 +27,17 @@ func (state PeerJoinState) Process(peer *Peer) {
 			// к сожалению, до сдачи лабы менее 10 часов,
 			// да и по протоколу мастер в сети только один,
 			// так что: автоподключение
-			peer.messageController.AddMessage(peer.Config.CliConfig.MulticastAddress, message.CreateJoinMessage(
-				peer.Config.CliConfig.PlayerName,
-				peer.Config.CliConfig.GameName,
-				peer.Role,
-			))
+			peer.messageController.AddMessage(
+				peer.Config.CliConfig.MulticastAddress,
+				peer.Config.CliConfig.MulticastPort,
+				message.CreateJoinMessage(
+					peer.Config.CliConfig.PlayerName,
+					peer.Config.CliConfig.GameName,
+					peer.Role,
+				),
+			)
 			break
-		case *protocol.GameMessage_Ack:
+		case *protocol.GameMessage_Ack: // это в другом ящике
 			fmt.Println("ack=", msg.MsgSeq)
 			state.joinPeer(peer)
 			break

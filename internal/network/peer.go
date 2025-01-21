@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"net"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -64,7 +65,10 @@ func NewPeer(g *model.Game, conf *config.Config) *Peer {
 	if peer.Role == protocol.NodeRole_MASTER {
 		peer.GameInstance.AddSnake(peer.ID, model.Master)
 	}
-	peer.annoncementController = *NewAnnouncementController(&peer.ctx, conf.CliConfig.MulticastAddress)
+	peer.annoncementController = *NewAnnouncementController(
+		&peer.ctx,
+		conf.CliConfig.MulticastAddress+":"+strconv.Itoa(conf.CliConfig.MulticastPort),
+	)
 	peer.messageController = *NewMessageController(&peer.ctx, conn, peer)
 	return peer
 }

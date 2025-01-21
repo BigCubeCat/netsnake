@@ -18,16 +18,24 @@ func (state PeerMasterState) Process(peer *Peer) {
 	state.sendAnnMsg(peer) // делаем спам рассылку с новостями
 
 	multicastInbox := peer.annoncementController.ReadInbox()
-	logrus.Println("messages recieaved: ", len(multicastInbox))
 	for _, recvMessage := range multicastInbox {
 		switch recvMessage.GetType().(type) {
 		case *protocol.GameMessage_Discover:
 			// TODO: сделать операцию на определение DEPUTY
 			logrus.Debug("discover message recv")
 			state.sendAnnMsg(peer) // делаем спам рассылку с новостями
+		}
+	}
+	unicastInbox := peer.messageController.ReadInbox()
+	for _, recvMessage := range unicastInbox {
+		switch recvMessage.Message.GetType().(type) {
 		case *protocol.GameMessage_Join:
 			logrus.Debug("join message recv")
-			peer.JoinPlayer(recvMessage.GetJoin())
+			peer.JoinPlayer(
+				recvMessage.Message.GetJoin(),
+				recvMessage.Address,
+				recvMessage.Port,
+			)
 		}
 	}
 }
@@ -44,13 +52,21 @@ func (state PeerMasterState) sendAnnMsg(peer *Peer) {
 		peer.Role,
 		state.generatePlayers(peer),
 	)
-	peer.messageController.AddMessage(peer.Config.CliConfig.MulticastAddress, msg)
+	peer.messageController.AddMessage(
+		peer.Config.CliConfig.MulticastAddress,
+		peer.Config.CliConfig.MulticastPort,
+		msg,
+	)
 }
 
 // Ack msg
 func (state PeerMasterState) sendAckMsg(peer *Peer, recvId int) {
 	msg := message.NewAckMsg(peer.msgSeq.Load(), int32(peer.ID), int32(recvId))
-	peer.messageController.AddMessage(peer.Config.CliConfig.MulticastAddress, msg)
+	peer.messageController.AddMessage(
+		peer.Config.CliConfig.MulticastAddress,
+		peer.Config.CliConfig.MulticastPort,
+		msg,
+	)
 }
 
 func (state PeerMasterState) generatePlayers(peer *Peer) *protocol.GamePlayers {

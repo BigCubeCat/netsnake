@@ -10,6 +10,7 @@ type CliConfig struct {
 	PlayerName       string
 	GameName         string
 	MulticastAddress string
+	MulticastPort    int
 	UnicastAddress   string
 
 	LogLevel string
@@ -20,6 +21,7 @@ func ArgParse() CliConfig {
 		config        CliConfig
 		levelSelector *string
 		multicast     *string
+		multicastPort *int
 		name          *string
 		gameName      *string
 	)
@@ -34,6 +36,11 @@ func ArgParse() CliConfig {
 		"m",
 		"multicast",
 		&argparse.Options{Required: true, Help: "mutlicast address"},
+	)
+	multicastPort = parser.Int(
+		"p",
+		"multicast-port",
+		&argparse.Options{Required: true, Help: "mutlicast prt"},
 	)
 	name = parser.String(
 		"n",
@@ -53,6 +60,7 @@ func ArgParse() CliConfig {
 	}
 
 	config.MulticastAddress = *multicast
+	config.MulticastPort = *multicastPort
 	config.LogLevel = *levelSelector
 	config.PlayerName = *name
 	config.GameName = *gameName

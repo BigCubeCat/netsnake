@@ -14,7 +14,7 @@ func (peer *Peer) MoveSnake(direction int) {
 	}
 }
 
-func (peer *Peer) JoinPlayer(joinMsg *protocol.GameMessage_JoinMsg) {
+func (peer *Peer) JoinPlayer(joinMsg *protocol.GameMessage_JoinMsg, address string, port int) {
 	id := utils.RandomId()
 	playerName := joinMsg.GetPlayerName()
 	role := joinMsg.GetRequestedRole()
@@ -30,7 +30,8 @@ func (peer *Peer) JoinPlayer(joinMsg *protocol.GameMessage_JoinMsg) {
 		peer.GameInstance.AddSnake(peer.ID, model.Normal)
 	}
 	peer.messageController.AddMessage(
-		"",
+		address,
+		port,
 		message.NewAckMsg(peer.msgSeq.Load(), int32(peer.ID), int32(id)),
 	)
 }

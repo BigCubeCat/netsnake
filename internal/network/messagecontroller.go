@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"sync"
 
 	"github.com/bigcubecat/netsnake/internal/config"
 	"github.com/bigcubecat/netsnake/internal/network/message"
 	protocol "github.com/bigcubecat/netsnake/proto"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/proto"
 )
 
 type MessagePromise struct {
@@ -24,8 +22,7 @@ type MessageController struct {
 	ctx     *context.Context
 	peerPtr *Peer
 
-	inboxMessage *protocol.GameMessage
-	inboxMutex   sync.Mutex
+	inboxMessageQueue chan MessagePromise
 
 	outboxMessageQueue chan MessagePromise
 }
@@ -40,7 +37,8 @@ func NewMessageController(
 		ctx:     ctx,
 		peerPtr: peerPtr,
 
-		outboxMessageQueue: make(chan MessagePromise, 5),
+		inboxMessageQueue:  make(chan MessagePromise, 100),
+		outboxMessageQueue: make(chan MessagePromise, 100),
 	}
 }
 
@@ -51,10 +49,15 @@ func (mc *MessageController) Routine() {
 }
 
 // планируем отправку сообщения при первой же возможности
-func (mc *MessageController) AddMessage(address string, gameMessage *protocol.GameMessage) {
+func (mc *MessageController) AddMessage(
+	address string,
+	port int,
+	gameMessage *protocol.GameMessage,
+) {
 	mc.peerPtr.msgSeq.Add(1)
 	mc.outboxMessageQueue <- MessagePromise{
 		Address: address,
+		Port:    port,
 		Message: gameMessage,
 	}
 }
@@ -102,16 +105,28 @@ func (mc *MessageController) recvData() {
 				remoteAddr,
 				string(buffer[:n]),
 			)
-			mc.inboxMutex.Lock()
-			mc.inboxMessage, err = message.UnmarshalGameMessage(buffer[:n])
+			msg, err := message.UnmarshalGameMessage(buffer[:n])
 			if err != nil {
 				logrus.Errorf("cant UnmarshalGameMessage %s: %s\n",
 					remoteAddr,
 					string(buffer[:n]),
 				)
-				mc.inboxMessage = nil
+				continue
 			}
-			mc.inboxMutex.Unlock()
+			mc.inboxMessageQueue <- MessagePromise{
+				Address: remoteAddr.IP.String(),
+				Port:    remoteAddr.Port,
+				Message: msg,
+			}
 		}
 	}
+}
+
+func (mc *MessageController) ReadInbox() []MessagePromise {
+	n := len(mc.inboxMessageQueue)
+	result := make([]MessagePromise, n)
+	for i := 0; i < n; i++ {
+		result[i] = <-mc.inboxMessageQueue
+	}
+	return result
 }
