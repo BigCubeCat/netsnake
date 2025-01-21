@@ -1,6 +1,7 @@
-package announcementcontroller
+package network
 
 import (
+	"context"
 	"net"
 	"sync"
 
@@ -11,6 +12,7 @@ import (
 )
 
 type AnnouncementController struct {
+	ctx           *context.Context
 	conn          net.Conn // соединение для прослушивания
 	address       net.Addr // мультикаст адрес
 	MulticastAddr string
@@ -19,13 +21,29 @@ type AnnouncementController struct {
 	messages []*protocol.GameMessage
 }
 
-func NewAnnouncementController(address string) *AnnouncementController {
+func NewAnnouncementController(ctx *context.Context, address string) *AnnouncementController {
 	return &AnnouncementController{
+		ctx:           ctx,
 		MulticastAddr: address,
 	}
 }
 
 func (ac *AnnouncementController) InboxRoutine() {
+	go func() {
+		for {
+			select {
+			case <-(*ac.ctx).Done():
+				logrus.Println("multicast listener finished")
+				return
+			default:
+				ac.process()
+				return
+			}
+		}
+	}()
+}
+
+func (ac *AnnouncementController) process() {
 	addr, err := net.ResolveUDPAddr("udp", ac.MulticastAddr)
 	if err != nil {
 		logrus.Fatalf("Ошибка при разрешении адреса: %v", err)
