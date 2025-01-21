@@ -25,6 +25,9 @@ func (state PeerMasterState) Process(peer *Peer) {
 			// TODO: сделать операцию на определение DEPUTY
 			logrus.Debug("discover message recv")
 			state.sendAnnMsg(peer) // делаем спам рассылку с новостями
+		case *protocol.GameMessage_Join:
+			logrus.Debug("join message recv")
+			peer.JoinPlayer(recvMessage.GetJoin())
 		}
 	}
 }
@@ -41,6 +44,12 @@ func (state PeerMasterState) sendAnnMsg(peer *Peer) {
 		peer.Role,
 		state.generatePlayers(peer),
 	)
+	peer.messageController.AddMessage(peer.Config.CliConfig.MulticastAddress, msg)
+}
+
+// Ack msg
+func (state PeerMasterState) sendAckMsg(peer *Peer, recvId int) {
+	msg := message.NewAckMsg(peer.msgSeq.Load(), int32(peer.ID), int32(recvId))
 	peer.messageController.AddMessage(peer.Config.CliConfig.MulticastAddress, msg)
 }
 

@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/bigcubecat/netsnake/internal/network/message"
 	protocol "github.com/bigcubecat/netsnake/proto"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
 
 type MessagePromise struct {
@@ -50,6 +52,7 @@ func (mc *MessageController) Routine() {
 
 // планируем отправку сообщения при первой же возможности
 func (mc *MessageController) AddMessage(address string, gameMessage *protocol.GameMessage) {
+	mc.peerPtr.msgSeq.Add(1)
 	mc.outboxMessageQueue <- MessagePromise{
 		Address: address,
 		Message: gameMessage,
@@ -65,6 +68,7 @@ func (mc *MessageController) sendData() {
 			return
 		default:
 			if len(mc.outboxMessageQueue) > 0 {
+				fmt.Println("message send")
 				msg := <-mc.outboxMessageQueue
 				buffer, err = message.MarshalGameMessage(msg.Message)
 				if err != nil {

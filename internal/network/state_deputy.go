@@ -6,5 +6,5 @@ import (
 
 func (state PeerDeputyState) Process(peer *Peer) {
 	// TODO: сделать проверку, что MASTER жив
-	GetStateByRole(protocol.NodeRole_NORMAL).Process(peer)
+	GetStateByRole(protocol.NodeRole_NORMAL, false).Process(peer)
 }

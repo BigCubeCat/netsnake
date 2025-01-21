@@ -15,14 +15,20 @@ type PeerNormalState struct{}
 
 type PeerViewerState struct{}
 
+type PeerJoinState struct{}
+
 var states = [...]PeerProcessorState{
 	PeerMasterState{},
 	PeerDeputyState{},
 	PeerNormalState{},
 	PeerViewerState{},
+	PeerJoinState{},
 }
 
-func GetStateByRole(role protocol.NodeRole) PeerProcessorState {
+func GetStateByRole(role protocol.NodeRole, join bool) PeerProcessorState {
+	if join {
+		return states[4]
+	}
 	switch role {
 	case protocol.NodeRole_MASTER:
 		return states[0]

@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"net"
+	"sync/atomic"
 	"time"
 
 	"github.com/bigcubecat/netsnake/internal/common"
@@ -27,6 +28,9 @@ type Peer struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
+	needJoin bool
+	msgSeq   *atomic.Int64
+
 	step uint8 // шаг [0, 10)
 }
 
@@ -36,8 +40,11 @@ func NewPeer(g *model.Game, conf *config.Config) *Peer {
 		Role:         modeToRole(conf.UiConfig.Mode),
 		Players:      make(map[int]common.Player),
 		GameInstance: g,
-		Config:       conf,
-		step:         0,
+
+		Config:   conf,
+		needJoin: conf.UiConfig.Mode != config.MASTER_MODE,
+		msgSeq:   new(atomic.Int64),
+		step:     0,
 	}
 	addr, err := net.ResolveUDPAddr("udp", ":0")
 	if err != nil {
@@ -82,7 +89,7 @@ func (peer *Peer) routine() {
 			return
 		default:
 			peer.step = (peer.step + 1) % 10
-			GetStateByRole(peer.Role).Process(peer)
+			GetStateByRole(peer.Role, peer.needJoin).Process(peer)
 			time.Sleep(time.Duration(peer.Config.EnvConfig.Dt/10) * time.Millisecond)
 		}
 	}
@@ -103,5 +110,16 @@ func modeToRole(mode int) protocol.NodeRole {
 		return protocol.NodeRole_NORMAL
 	default:
 		return protocol.NodeRole_VIEWER
+	}
+}
+
+func roleToMode(role protocol.NodeRole) int {
+	switch role {
+	case protocol.NodeRole_MASTER:
+		return 0
+	case protocol.NodeRole_NORMAL:
+		return 1
+	default:
+		return 2
 	}
 }
