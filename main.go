@@ -50,17 +50,17 @@ func main() {
 	defer f.Close()
 	logrus.SetOutput(f)
 
+	uiConfig := config.UiConfig{}
 	conf := config.Config{
 		CliConfig: argparseConfig,
 		EnvConfig: envConfig,
-		UiConfig:  config.UiConfig{},
+		UiConfig:  uiConfig,
 	}
 	fmt.Println(conf)
 
-	mode := 0
-	ui.RunChooseMode(&mode)
-	if mode == 0 {
+	ui.RunChooseMode(&uiConfig.Mode)
 
+	if uiConfig.Mode == 0 {
 		game := model.NewGame(
 			int(envConfig.FieldWidth),
 			int(envConfig.FieldHeight),
