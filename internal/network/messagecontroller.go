@@ -13,6 +13,7 @@ import (
 
 type MessagePromise struct {
 	Address string
+	Port    int
 	Message *protocol.GameMessage
 }
 
@@ -29,17 +30,9 @@ type MessageController struct {
 
 func NewMessageController(
 	ctx *context.Context,
+	conn *net.UDPConn,
 	peerPtr *Peer,
 ) *MessageController {
-	addr, err := net.ResolveUDPAddr("udp", ":0")
-	if err != nil {
-		logrus.Fatalf("ошибка при разрешении адреса: %s", err.Error())
-	}
-	// Создание UDP-соединения
-	conn, err := net.ListenUDP("udp", addr)
-	if err != nil {
-		logrus.Fatalf("bind error: %s", err.Error())
-	}
 	return &MessageController{
 		conn:    conn,
 		ctx:     ctx,
@@ -80,7 +73,7 @@ func (mc *MessageController) sendData() {
 				}
 				_, err = mc.conn.WriteToUDP(
 					buffer,
-					&net.UDPAddr{IP: net.ParseIP(msg.Address)},
+					&net.UDPAddr{IP: net.ParseIP(msg.Address), Port: msg.Port},
 				)
 			}
 		}

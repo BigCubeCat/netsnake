@@ -1,11 +1,10 @@
 package network
 
 import (
-	"time"
-
 	"github.com/bigcubecat/netsnake/internal/network/message"
 	protocol "github.com/bigcubecat/netsnake/proto"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
 
 func (state PeerMasterState) Process(peer *Peer) {
@@ -13,7 +12,9 @@ func (state PeerMasterState) Process(peer *Peer) {
 		logrus.Println("game inst is null")
 		logrus.Fatalln("game instance is nill in master")
 	}
-	peer.GameInstance.MoveSnakes()
+	if peer.step == 0 {
+		peer.GameInstance.MoveSnakes()
+	}
 	state.sendAnnMsg(peer) // делаем спам рассылку с новостями
 
 	multicastInbox := peer.annoncementController.ReadInbox()
@@ -26,7 +27,6 @@ func (state PeerMasterState) Process(peer *Peer) {
 			state.sendAnnMsg(peer) // делаем спам рассылку с новостями
 		}
 	}
-	time.Sleep(time.Duration(peer.Config.EnvConfig.Dt) * time.Millisecond)
 }
 
 // рассылка сообщения по мультикасту
@@ -45,5 +45,18 @@ func (state PeerMasterState) sendAnnMsg(peer *Peer) {
 }
 
 func (state PeerMasterState) generatePlayers(peer *Peer) *protocol.GamePlayers {
+	players := make([]*protocol.GamePlayer, 0)
+	for _, player := range peer.Players {
+		players = append(players, &protocol.GamePlayer{
+			Name:      proto.String(player.Name),
+			Id:        proto.Int32(int32(peer.ID)),
+			IpAddress: proto.String(player.IpAddress),
+			Port:      proto.Int32(int32(player.Port)),
+			Role:      modeToRole(player.Role).Enum(),
+			Type:      protocol.Default_GamePlayer_Type.Enum(),
+			Score:     proto.Int32(int32(player.Score)),
+		})
+	}
+
 	return &protocol.GamePlayers{Players: []*protocol.GamePlayer{}}
 }

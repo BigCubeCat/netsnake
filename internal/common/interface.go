@@ -16,6 +16,7 @@ type SnakeScore struct {
 
 type Player struct {
 	ID        int
+	Role      int
 	Name      string
 	IpAddress string
 	Port      int
