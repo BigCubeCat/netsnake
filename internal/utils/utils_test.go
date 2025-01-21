@@ -1,7 +1,7 @@
 package utils_test
 
 import (
-	"snake/internal/utils"
+	"github.com/bigcubecat/netsnake/internal/utils"
 	"testing"
 )
 
