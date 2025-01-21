@@ -1,18 +1,21 @@
 package ui
 
 import (
-	"github.com/bigcubecat/netsnake/internal/model"
 	"time"
+
+	"github.com/bigcubecat/netsnake/internal/network"
+	"github.com/sirupsen/logrus"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func NewUi(game *model.Game, userId int) uiModel {
+func NewUi(game *network.Peer, userId int) uiModel {
+	logrus.Println("NewUi")
 	m := uiModel{
-		Game:   game,
-		UserId: userId,
-		width:  (*game).Width(),
-		height: (*game).Height(),
+		GamePeer: game,
+		UserId:   userId,
+		width:    game.GameInstance.Width(),
+		height:   game.GameInstance.Height(),
 	}
 	return m
 }
@@ -32,16 +35,16 @@ func (m uiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up", "k", "w":
-			(*m.Game).MoveSnake(m.UserId, 0)
+			m.GamePeer.MoveSnake(0)
 			return m, nil
 		case "down", "j", "s":
-			(*m.Game).MoveSnake(m.UserId, 1)
+			m.GamePeer.MoveSnake(1)
 			return m, nil
 		case "left", "h", "a":
-			(*m.Game).MoveSnake(m.UserId, 2)
+			m.GamePeer.MoveSnake(2)
 			return m, nil
 		case "right", "l", "d":
-			(*m.Game).MoveSnake(m.UserId, 3)
+			m.GamePeer.MoveSnake(3)
 			return m, nil
 		}
 	case userUiAction:

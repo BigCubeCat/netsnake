@@ -13,3 +13,11 @@ type SnakeScore struct {
 	Score  int
 	Alive  bool
 }
+
+type Player struct {
+	ID        int
+	Name      string
+	IpAddress string
+	Port      int
+	Score     int
+}

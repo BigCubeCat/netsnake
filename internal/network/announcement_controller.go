@@ -29,6 +29,7 @@ func NewAnnouncementController(ctx *context.Context, address string) *Announceme
 }
 
 func (ac *AnnouncementController) InboxRoutine() {
+	logrus.Println("InboxRoutine")
 	go func() {
 		for {
 			select {

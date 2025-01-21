@@ -2,17 +2,19 @@ package network
 
 import (
 	"context"
-	"time"
 
+	"github.com/bigcubecat/netsnake/internal/common"
 	"github.com/bigcubecat/netsnake/internal/config"
 	"github.com/bigcubecat/netsnake/internal/model"
 	"github.com/bigcubecat/netsnake/internal/utils"
 	protocol "github.com/bigcubecat/netsnake/proto"
+	"github.com/sirupsen/logrus"
 )
 
 type Peer struct {
-	ID   int
-	Role protocol.NodeRole
+	ID      int
+	Role    protocol.NodeRole
+	Players map[int]common.Player
 
 	GameInstance *model.Game
 	Config       *config.Config
@@ -28,9 +30,16 @@ func NewPeer(g *model.Game, conf *config.Config) *Peer {
 	peer := &Peer{
 		ID:           utils.RandomId(),
 		Role:         modeToRole(conf.UiConfig.Mode),
+		Players:      make(map[int]common.Player),
 		GameInstance: g,
 		Config:       conf,
 	}
+	peer.Players[peer.ID] = common.Player{
+		ID:    peer.ID,
+		Name:  peer.Config.CliConfig.PlayerName,
+		Score: 0,
+	}
+	peer.GameInstance.AddSnake(peer.ID, model.Master)
 	peer.annoncementController = *NewAnnouncementController(
 		&peer.ctx,
 		conf.CliConfig.MulticastAddress,
@@ -49,18 +58,22 @@ func (peer *Peer) Exit() {
 func (peer *Peer) StartGorutines() {
 	peer.ctx, peer.cancel = context.WithCancel(context.Background())
 
-	peer.annoncementController.InboxRoutine()
-	peer.messageController.Routine()
 	go peer.routine()
+	go peer.annoncementController.InboxRoutine()
+	go peer.messageController.Routine()
 }
 
 func (peer *Peer) routine() {
-	select {
-	case <-peer.ctx.Done():
-		return
-	default:
-		GetStateByRole(peer.Role).Process(peer)
-		time.Sleep(time.Duration(peer.Config.EnvConfig.Dt) * time.Millisecond)
+	for {
+		logrus.Println("routine")
+		select {
+		case <-peer.ctx.Done():
+			logrus.Println("peer routine done")
+			return
+		default:
+			// таймаут в Process так как у разных ролей он разный
+			GetStateByRole(peer.Role).Process(peer)
+		}
 	}
 }
 

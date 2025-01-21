@@ -7,7 +7,7 @@ import (
 )
 
 func (m uiModel) viewGameField() string {
-	field := m.Game.Field()
+	field := m.GamePeer.GameInstance.Field()
 	snakeBoard := []string{}
 	for i := 0; i < len(field); i++ {
 		row := []string{}
@@ -23,7 +23,7 @@ func (m uiModel) viewGameField() string {
 						lipgloss.Color(
 							utils.IntToHexColor(cellValue),
 						),
-					).Render("🎱"),
+					).Render("⭕"),
 				)
 			} else {
 				row = append(row,

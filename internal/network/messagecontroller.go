@@ -44,10 +44,13 @@ func NewMessageController(
 		conn:    conn,
 		ctx:     ctx,
 		peerPtr: peerPtr,
+
+		outboxMessageQueue: make(chan MessagePromise, 5),
 	}
 }
 
 func (mc *MessageController) Routine() {
+	logrus.Println("MessageController Routine")
 	go mc.recvData()
 	go mc.sendData()
 }
@@ -79,7 +82,6 @@ func (mc *MessageController) sendData() {
 					buffer,
 					&net.UDPAddr{IP: net.ParseIP(msg.Address)},
 				)
-
 			}
 		}
 	}

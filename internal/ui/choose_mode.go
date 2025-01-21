@@ -1,12 +1,12 @@
 package ui
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/sirupsen/logrus"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
@@ -63,7 +63,7 @@ func RunChooseMode(value *int) {
 	p := tea.NewProgram(m, tea.WithAltScreen())
 
 	if _, err := p.Run(); err != nil {
-		fmt.Println("Error running program:", err)
+		logrus.Println("Error running program:", err)
 		os.Exit(1)
 	}
 }

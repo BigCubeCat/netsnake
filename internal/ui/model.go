@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/bigcubecat/netsnake/internal/config"
-	"github.com/bigcubecat/netsnake/internal/model"
+	"github.com/bigcubecat/netsnake/internal/network"
 
 	"time"
 )
@@ -21,11 +21,11 @@ const (
 )
 
 type uiModel struct {
-	Game   *model.Game
-	Config *config.Config
-	UserId int
-	width  int
-	height int
+	GamePeer *network.Peer
+	Config   *config.Config
+	UserId   int
+	width    int
+	height   int
 }
 
 type userUiAction struct{}
