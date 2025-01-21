@@ -59,12 +59,9 @@ func (peer *Peer) routine() {
 	case <-peer.ctx.Done():
 		return
 	default:
-		peer.step()
+		GetStateByRole(peer.Role).Process(peer)
+		time.Sleep(time.Duration(peer.Config.EnvConfig.Dt) * time.Millisecond)
 	}
-}
-
-func (peer *Peer) step() {
-	time.Sleep(time.Duration(peer.Config.EnvConfig.Dt) * time.Millisecond)
 }
 
 func modeToRole(mode int) protocol.NodeRole {
