@@ -3,7 +3,6 @@ package network
 import (
 	"github.com/bigcubecat/netsnake/internal/common"
 	"github.com/bigcubecat/netsnake/internal/model"
-	"github.com/bigcubecat/netsnake/internal/network/message"
 	"github.com/bigcubecat/netsnake/internal/utils"
 	protocol "github.com/bigcubecat/netsnake/proto"
 )
@@ -34,9 +33,9 @@ func (peer *Peer) JoinPlayer(joinMsg *protocol.GameMessage_JoinMsg, address stri
 	if role != protocol.NodeRole_VIEWER {
 		peer.GameInstance.AddSnake(id, model.Normal)
 	}
-	peer.messageController.AddMessage(
-		address,
-		port,
-		message.NewAckMsg(peer.msgSeq.Load(), int32(peer.ID), int32(id)),
-	)
+	// peer.messageController.AddMessage(
+	// 	address,
+	// 	port,
+	// 	message.NewAckMsg(peer.msgSeq.Load(), int32(peer.ID), int32(id)),
+	// )
 }
