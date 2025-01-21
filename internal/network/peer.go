@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bigcubecat/netsnake/internal/common"
 	"github.com/bigcubecat/netsnake/internal/config"
@@ -34,12 +35,15 @@ func NewPeer(g *model.Game, conf *config.Config) *Peer {
 		GameInstance: g,
 		Config:       conf,
 	}
+	fmt.Println(peer.Role, conf.UiConfig.Mode)
 	peer.Players[peer.ID] = common.Player{
 		ID:    peer.ID,
 		Name:  peer.Config.CliConfig.PlayerName,
 		Score: 0,
 	}
-	peer.GameInstance.AddSnake(peer.ID, model.Master)
+	if peer.Role == protocol.NodeRole_MASTER {
+		peer.GameInstance.AddSnake(peer.ID, model.Master)
+	}
 	peer.annoncementController = *NewAnnouncementController(
 		&peer.ctx,
 		conf.CliConfig.MulticastAddress,

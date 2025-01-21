@@ -27,14 +27,13 @@ func main() {
 	logrus.SetOutput(f)
 
 	uiConfig := config.UiConfig{}
+	ui.RunChooseMode(&uiConfig.Mode)
 	conf := config.Config{
 		CliConfig: argparseConfig,
 		EnvConfig: envConfig,
 		UiConfig:  uiConfig,
 	}
 	logrus.Println(conf)
-
-	ui.RunChooseMode(&uiConfig.Mode)
 
 	// создаем объект peer, который работает с сетью и игрой
 	peer = network.NewPeer(
