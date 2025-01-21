@@ -50,43 +50,55 @@ func main() {
 	defer f.Close()
 	logrus.SetOutput(f)
 
-	game := model.NewGame(
-		int(envConfig.FieldWidth),
-		int(envConfig.FieldHeight),
-		int(envConfig.FoodStatic),
-	)
-
-	// Добавляем змейку
-	userId := utils.RandRange(2, 16581375)
-	otherId := utils.RandRange(2, 16581375)
-	fmt.Println("userID = ", userId)
-	game.AddSnake(userId, model.Master)
-	game.AddSnake(otherId, model.Normal)
-
-	game.MoveSnakes()
-
-	ticker := time.NewTicker(time.Millisecond * time.Duration(envConfig.Dt))
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case <-done:
-				return
-			case <-ticker.C:
-				// Основной игровой цикл
-				game.MoveSnakes()
-				game.MoveSnake(otherId, utils.RandRange(0, 4))
-				log_data(game)
-			}
-		}
-	}()
-	m := ui.NewUi(game, userId)
-	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
-		fmt.Println("Uh oh, we encountered an error:", err)
-		os.Exit(1)
+	conf := config.Config{
+		CliConfig: argparseConfig,
+		EnvConfig: envConfig,
+		UiConfig:  config.UiConfig{},
 	}
-	if err != nil {
-		logrus.Error(err.Error())
-		return
+	fmt.Println(conf)
+
+	mode := 0
+	ui.RunChooseMode(&mode)
+	if mode == 0 {
+
+		game := model.NewGame(
+			int(envConfig.FieldWidth),
+			int(envConfig.FieldHeight),
+			int(envConfig.FoodStatic),
+		)
+
+		// Добавляем змейку
+		userId := utils.RandRange(2, 16581375)
+		otherId := utils.RandRange(2, 16581375)
+		fmt.Println("userID = ", userId)
+		game.AddSnake(userId, model.Master)
+		game.AddSnake(otherId, model.Normal)
+
+		game.MoveSnakes()
+
+		ticker := time.NewTicker(time.Millisecond * time.Duration(envConfig.Dt))
+		done := make(chan bool)
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					// Основной игровой цикл
+					game.MoveSnakes()
+					game.MoveSnake(otherId, utils.RandRange(0, 4))
+					log_data(game)
+				}
+			}
+		}()
+		m := ui.NewUi(game, userId)
+		if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
+			fmt.Println("Uh oh, we encountered an error:", err)
+			os.Exit(1)
+		}
+		if err != nil {
+			logrus.Error(err.Error())
+			return
+		}
 	}
 }

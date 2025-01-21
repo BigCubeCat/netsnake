@@ -3,9 +3,9 @@ package config
 // объединенный конфик
 type Config struct {
 	// настройки из args
-	cliConfig CliConfig
+	CliConfig CliConfig
 	// настройки из переменных среды
-	envConfig EnvConfig
+	EnvConfig EnvConfig
 	// настройик из UI
-	uiConfig UiConfig
+	UiConfig UiConfig
 }

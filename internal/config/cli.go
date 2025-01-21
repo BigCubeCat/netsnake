@@ -7,20 +7,21 @@ import (
 )
 
 type CliConfig struct {
+	PlayerName       string
+	GameName         string
 	MulticastAddress string
 	UnicastAddress   string
 
 	LogLevel string
-	IsHost   bool
 }
 
 func ArgParse() CliConfig {
-	// TODO: доделать
 	var (
 		config        CliConfig
 		levelSelector *string
 		multicast     *string
-		isServer      *bool
+		name          *string
+		gameName      *string
 	)
 	parser := argparse.NewParser("Snake", "")
 	levelSelector = parser.Selector(
@@ -34,9 +35,16 @@ func ArgParse() CliConfig {
 		"multicast",
 		&argparse.Options{Required: true, Help: "mutlicast address"},
 	)
-	isServer = parser.Flag("f", "force", &argparse.Options{
-		Required: false, Help: "if used, host game",
-	})
+	name = parser.String(
+		"n",
+		"name",
+		&argparse.Options{Required: true, Help: "player name"},
+	)
+	gameName = parser.String(
+		"g",
+		"game",
+		&argparse.Options{Required: false, Help: "name for your game, if you host"},
+	)
 
 	err := parser.Parse(os.Args)
 	if err != nil {
@@ -46,7 +54,11 @@ func ArgParse() CliConfig {
 
 	config.MulticastAddress = *multicast
 	config.LogLevel = *levelSelector
-	config.IsHost = *isServer
+	config.PlayerName = *name
+	config.GameName = *gameName
+	if config.GameName == "" {
+		config.GameName = config.PlayerName + "_game"
+	}
 
 	return config
 }
