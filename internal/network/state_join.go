@@ -3,8 +3,10 @@ package network
 import (
 	"fmt"
 
+	"github.com/bigcubecat/netsnake/internal/model"
 	"github.com/bigcubecat/netsnake/internal/network/message"
 	protocol "github.com/bigcubecat/netsnake/proto"
+	"github.com/sirupsen/logrus"
 )
 
 func (state PeerJoinState) Process(peer *Peer) {
@@ -14,35 +16,55 @@ func (state PeerJoinState) Process(peer *Peer) {
 		peer.Config.CliConfig.MulticastPort,
 		msg,
 	)
-
-	if peer.step%10 != 0 {
-		return
-	}
 	multicastInbox := peer.annoncementController.ReadInbox()
-	for _, recvMessage := range multicastInbox {
-		fmt.Println("inbox")
-		switch recvMessage.GetType().(type) {
-		case *protocol.GameMessage_Announcement:
-			// УРА! ПОДКЛЮЧАЕМСЯ
-			// к сожалению, до сдачи лабы менее 10 часов,
-			// да и по протоколу мастер в сети только один,
-			// так что: автоподключение
-			peer.messageController.AddMessage(
-				peer.Config.CliConfig.MulticastAddress,
-				peer.Config.CliConfig.MulticastPort,
-				message.CreateJoinMessage(
-					peer.Config.CliConfig.PlayerName,
-					peer.Config.CliConfig.GameName,
-					peer.Role,
-				),
-			)
-			break
-		case *protocol.GameMessage_Ack: // это в другом ящике
-			fmt.Println("ack=", msg.MsgSeq)
+	unicastInbox := peer.messageController.ReadInbox()
+	logrus.Debugln(
+		"state join process ",
+		multicastInbox,
+		unicastInbox,
+	)
+	for _, recvMessage := range unicastInbox {
+		switch recvMessage.Message.GetType().(type) {
+		case *protocol.GameMessage_Ack:
 			state.joinPeer(peer)
+			return
+		case *protocol.GameMessage_Announcement:
+			state.handleAnnouncement(peer, recvMessage.Message.GetAnnouncement())
 			break
 		}
 	}
+	for _, recvMessage := range multicastInbox {
+		switch recvMessage.GetType().(type) {
+		case *protocol.GameMessage_Announcement:
+			state.handleAnnouncement(peer, recvMessage.GetAnnouncement())
+			break
+		}
+	}
+}
+
+func (state PeerJoinState) handleAnnouncement(
+	peer *Peer,
+	msg *protocol.GameMessage_AnnouncementMsg,
+) {
+	// УРА! ПОДКЛЮЧАЕМСЯ
+	// к сожалению, до сдачи лабы менее 10 часов,
+	// да и по протоколу мастер в сети только один,
+	// так что: автоподключение
+	peer.messageController.AddMessage(
+		peer.Config.CliConfig.MulticastAddress,
+		peer.Config.CliConfig.MulticastPort,
+		message.CreateJoinMessage(
+			peer.Config.CliConfig.PlayerName,
+			peer.Config.CliConfig.GameName,
+			peer.Role,
+		),
+	)
+	g := msg.GetGames()[0]
+	peer.GameInstance = model.NewGame(
+		int(g.Config.GetWidth()),
+		int(g.Config.GetWidth()),
+		int(g.Config.GetFoodStatic()),
+	)
 }
 
 func (state PeerJoinState) joinPeer(peer *Peer) {

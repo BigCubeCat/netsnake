@@ -2,7 +2,6 @@ package network
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/bigcubecat/netsnake/internal/config"
@@ -71,7 +70,6 @@ func (mc *MessageController) sendData() {
 			return
 		default:
 			if len(mc.outboxMessageQueue) > 0 {
-				fmt.Println("message send")
 				msg := <-mc.outboxMessageQueue
 				buffer, err = message.MarshalGameMessage(msg.Message)
 				if err != nil {

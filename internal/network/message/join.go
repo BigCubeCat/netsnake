@@ -2,6 +2,7 @@ package message
 
 import (
 	protocol "github.com/bigcubecat/netsnake/proto"
+	"github.com/sirupsen/logrus"
 
 	"time"
 
@@ -9,6 +10,7 @@ import (
 )
 
 func CreateJoinMessage(name, gameName string, role protocol.NodeRole) *protocol.GameMessage {
+	logrus.Debugln("CreateJoinMessage ", name, gameName)
 	return &protocol.GameMessage{
 		MsgSeq: proto.Int64(time.Now().UnixNano()),
 		Type: &protocol.GameMessage_Join{

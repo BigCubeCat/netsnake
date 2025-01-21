@@ -51,7 +51,6 @@ func (ac *AnnouncementController) process() {
 	}
 
 	conn, err := net.ListenMulticastUDP("udp", nil, addr)
-	conn.SetWriteBuffer(config.BUFFER_SIZE)
 	if err != nil {
 		logrus.Fatalf("Ошибка при прослушивании: %v", err)
 	}
@@ -60,6 +59,7 @@ func (ac *AnnouncementController) process() {
 	buf := make([]byte, config.BUFFER_SIZE)
 	for {
 		n, _, err := conn.ReadFromUDP(buf)
+		logrus.Debugf("recieve %d bytes\n", n)
 		if err != nil {
 			logrus.Printf("Ошибка при чтении: %v", err)
 			continue

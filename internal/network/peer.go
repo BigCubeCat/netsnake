@@ -86,7 +86,6 @@ func (peer *Peer) StartGorutines() {
 
 func (peer *Peer) routine() {
 	for {
-		logrus.Println("routine")
 		select {
 		case <-peer.ctx.Done():
 			logrus.Println("peer routine done")
