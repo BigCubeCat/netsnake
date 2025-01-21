@@ -3,13 +3,20 @@ package network
 import (
 	"github.com/bigcubecat/netsnake/internal/common"
 	"github.com/bigcubecat/netsnake/internal/model"
+	"github.com/bigcubecat/netsnake/internal/network/message"
 	"github.com/bigcubecat/netsnake/internal/utils"
 	protocol "github.com/bigcubecat/netsnake/proto"
 )
 
 func (peer *Peer) MoveSnake(direction int) {
-	if peer.Role != protocol.NodeRole_VIEWER {
+	if peer.Role == *protocol.NodeRole_MASTER.Enum() {
 		peer.GameInstance.MoveSnake(peer.ID, direction)
+	} else if peer.Role == *protocol.NodeRole_NORMAL.Enum() {
+		peer.messageController.AddMessage(
+			peer.Config.CliConfig.MulticastAddress,
+			peer.Config.CliConfig.MulticastPort,
+			message.NewSteerMsg(peer.msgSeq.Load(), int32(peer.ID), 0, int32(direction)),
+		)
 	}
 }
 

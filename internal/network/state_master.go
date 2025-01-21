@@ -22,6 +22,11 @@ func (state PeerMasterState) Process(peer *Peer) {
 	multicastInbox := peer.annoncementController.ReadInbox()
 	for _, recvMessage := range multicastInbox {
 		switch recvMessage.Message.GetType().(type) {
+		case *protocol.GameMessage_Steer:
+			peer.GameInstance.MoveSnake(
+				peer.getSteerSender(recvMessage),
+				int(recvMessage.Message.GetSteer().GetDirection()),
+			)
 		case *protocol.GameMessage_Discover:
 			// TODO: сделать операцию на определение DEPUTY
 			logrus.Debug("discover message recv")
@@ -175,4 +180,13 @@ func snakeDir(dir model.Direction) *protocol.Direction {
 	default:
 		return protocol.Direction_LEFT.Enum()
 	}
+}
+
+func (peer *Peer) getSteerSender(msg MessagePromise) int {
+	for k, v := range peer.Players {
+		if v.IpAddress == msg.Address && v.Port == msg.Port {
+			return k
+		}
+	}
+	return 0
 }
