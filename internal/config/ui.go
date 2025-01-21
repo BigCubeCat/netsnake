@@ -5,5 +5,6 @@ const NORMAL_MODE = 1
 const VIEWER_MODE = 2
 
 type UiConfig struct {
-	Mode int
+	Mode        int
+	GameAddress string
 }
