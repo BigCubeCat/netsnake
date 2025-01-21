@@ -5,7 +5,7 @@ import (
 
 	"github.com/bigcubecat/netsnake/internal/config"
 	"github.com/bigcubecat/netsnake/internal/model"
-	announcementcontroller "github.com/bigcubecat/netsnake/internal/network/announcement_controller"
+	ac "github.com/bigcubecat/netsnake/internal/network/announcement_controller"
 	"github.com/bigcubecat/netsnake/internal/utils"
 	protocol "github.com/bigcubecat/netsnake/proto"
 	"github.com/sirupsen/logrus"
@@ -18,34 +18,38 @@ type Peer struct {
 	GameInstance *model.Game
 	Config       *config.Config
 
-	annoncementController announcementcontroller.AnnouncementController
-	annCtrlContex         context.Context
-	annCtrlCancel         context.CancelFunc
+	annoncementController ac.AnnouncementController
+	messageController     MessageController
+
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func NewPeer(g *model.Game, conf *config.Config) *Peer {
-	return &Peer{
+	peer := &Peer{
 		ID:           utils.RandomId(),
 		Role:         modeToRole(conf.UiConfig.Mode),
 		GameInstance: g,
 		Config:       conf,
 
-		annoncementController: *announcementcontroller.NewAnnouncementController(
+		annoncementController: *ac.NewAnnouncementController(
 			conf.CliConfig.MulticastAddress,
 		),
 	}
+	peer.messageController = *NewMessageController(&peer.ctx, peer)
+	return peer
 }
 
 func (peer *Peer) Exit() {
-	peer.annCtrlCancel()
+	peer.cancel()
 }
 
 func (peer *Peer) StartGorutines() {
-	peer.annCtrlContex, peer.annCtrlCancel = context.WithCancel(context.Background())
+	peer.ctx, peer.cancel = context.WithCancel(context.Background())
 	go func() {
 		for {
 			select {
-			case <-peer.annCtrlContex.Done():
+			case <-peer.ctx.Done():
 				logrus.Println("multicast listener finished")
 				return
 			default:
