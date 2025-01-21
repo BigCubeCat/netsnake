@@ -19,7 +19,7 @@ func main() {
 	logging.SetupLogger(argparseConfig)
 	envConfig := config.EnvParse()
 
-	f, err := os.OpenFile("test.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	f, err := os.OpenFile(argparseConfig.GameName+".log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		logrus.Printf("error opening file: %v", err)
 	}
