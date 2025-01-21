@@ -32,7 +32,8 @@ type Peer struct {
 	needJoin bool
 	msgSeq   *atomic.Int64
 
-	step uint8 // шаг [0, 10)
+	step       uint8 // шаг [0, 10)
+	stateOrder int32
 
 	masterFound bool
 }
@@ -44,10 +45,11 @@ func NewPeer(g *model.Game, conf *config.Config) *Peer {
 		Players:      make(map[int]common.Player),
 		GameInstance: g,
 
-		Config:   conf,
-		needJoin: conf.UiConfig.Mode != config.MASTER_MODE,
-		msgSeq:   new(atomic.Int64),
-		step:     0,
+		Config:     conf,
+		needJoin:   conf.UiConfig.Mode != config.MASTER_MODE,
+		msgSeq:     new(atomic.Int64),
+		step:       0,
+		stateOrder: 0,
 	}
 	addr, err := net.ResolveUDPAddr("udp", ":0")
 	if err != nil {

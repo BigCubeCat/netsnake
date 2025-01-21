@@ -58,7 +58,6 @@ func (ac *AnnouncementController) process() {
 	buf := make([]byte, config.BUFFER_SIZE)
 	for {
 		n, remoteAddr, err := conn.ReadFromUDP(buf)
-		logrus.Debugf("recieve %d bytes\n", n)
 		if err != nil {
 			logrus.Printf("Ошибка при чтении: %v", err)
 			continue

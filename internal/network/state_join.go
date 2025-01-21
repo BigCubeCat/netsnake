@@ -2,6 +2,7 @@ package network
 
 import (
 	// "github.com/bigcubecat/netsnake/internal/model"
+	"github.com/bigcubecat/netsnake/internal/model"
 	"github.com/bigcubecat/netsnake/internal/network/message"
 	protocol "github.com/bigcubecat/netsnake/proto"
 	"github.com/sirupsen/logrus"
@@ -24,7 +25,6 @@ func (state PeerJoinState) Process(peer *Peer) {
 	for _, recvMessage := range unicastInbox {
 		switch recvMessage.Message.GetType().(type) {
 		case *protocol.GameMessage_Ack:
-			state.joinPeer(peer)
 			return
 		case *protocol.GameMessage_Announcement:
 			state.handleAnnouncement(peer, recvMessage)
@@ -34,7 +34,7 @@ func (state PeerJoinState) Process(peer *Peer) {
 	for _, recvMessage := range multicastInbox {
 		switch recvMessage.Message.GetType().(type) {
 		case *protocol.GameMessage_Announcement:
-			peer.masterFound = true
+			state.handleAnnouncement(peer, recvMessage)
 			break
 		}
 	}
@@ -57,15 +57,16 @@ func (state PeerJoinState) handleAnnouncement(
 			peer.Role,
 		),
 	)
+	state.joinPeer(peer)
 	if len(msg.Message.GetAnnouncement().GetGames()) == 0 {
 		return
 	}
-	// g := msg.Message.GetAnnouncement().GetGames()[0]
-	// peer.GameInstance = model.NewGame(
-	// 	int(g.Config.GetWidth()),
-	// 	int(g.Config.GetWidth()),
-	// 	int(g.Config.GetFoodStatic()),
-	// )
+	g := msg.Message.GetAnnouncement().GetGames()[0]
+	peer.GameInstance = model.NewGame(
+		int(g.Config.GetWidth()),
+		int(g.Config.GetWidth()),
+		int(g.Config.GetFoodStatic()),
+	)
 }
 
 func (state PeerJoinState) joinPeer(peer *Peer) {

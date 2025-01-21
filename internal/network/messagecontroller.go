@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/bigcubecat/netsnake/internal/config"
@@ -30,8 +31,8 @@ func NewMessageController(
 		ctx:     ctx,
 		peerPtr: peerPtr,
 
-		inboxMessageQueue:  make(chan MessagePromise, 100),
-		outboxMessageQueue: make(chan MessagePromise, 100),
+		inboxMessageQueue:  make(chan MessagePromise, 1000),
+		outboxMessageQueue: make(chan MessagePromise, 1000),
 	}
 }
 
@@ -105,6 +106,7 @@ func (mc *MessageController) recvData() {
 				)
 				continue
 			}
+			fmt.Println("получено сообщение")
 			mc.inboxMessageQueue <- MessagePromise{
 				Address: remoteAddr.IP.String(),
 				Port:    remoteAddr.Port,

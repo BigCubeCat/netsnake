@@ -1,6 +1,8 @@
 package network
 
 import (
+	"fmt"
+
 	"github.com/bigcubecat/netsnake/internal/common"
 	"github.com/bigcubecat/netsnake/internal/model"
 	protocol "github.com/bigcubecat/netsnake/proto"
@@ -9,14 +11,30 @@ import (
 
 func (state PeerViewerState) Process(peer *Peer) {
 	multicastInbox := peer.annoncementController.ReadInbox()
+	unicastInbox := peer.messageController.ReadInbox()
 	for _, recvMessage := range multicastInbox {
 		switch recvMessage.Message.GetType().(type) {
 		case *protocol.GameMessage_Announcement:
 			state.updateGame(peer, recvMessage.Message.GetAnnouncement())
 		case *protocol.GameMessage_State:
+			fmt.Println("STATE")
 			state.updateState(peer, recvMessage.Message.GetState())
 		}
 	}
+	for _, recvMessage := range unicastInbox {
+		switch recvMessage.Message.GetType().(type) {
+		case *protocol.GameMessage_Announcement:
+			state.updateGame(peer, recvMessage.Message.GetAnnouncement())
+		case *protocol.GameMessage_State:
+			logrus.Println("STATE UPDATED")
+			state.updateState(peer, recvMessage.Message.GetState())
+		}
+	}
+	logrus.Debugln(
+		"state view process ",
+		multicastInbox,
+		unicastInbox,
+	)
 }
 
 func (state PeerViewerState) updateState(peer *Peer, data *protocol.GameMessage_StateMsg) {
