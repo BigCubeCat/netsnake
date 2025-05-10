@@ -1,6 +1,7 @@
 syntax = "proto2";
 package snakes;
 option java_package = "me.ippolitov.fit.snakes";
+option go_package = "github.com/bigcubecat/netsnake";
 option java_outer_classname = "SnakesProto";
 
 // Роль узла в топологии связей узлов в пределах игры

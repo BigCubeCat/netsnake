@@ -3,17 +3,16 @@ package model
 // MoveSnakes обновляет положение всех змеек на поле.
 func (g *Game) MoveSnakes() {
 	for _, snake := range g.State.Snakes {
-		if !snake.IsAlive {
+		if snake.Role == Viewer {
 			continue
 		}
-
-		// Вычисляем новую позицию головы
 		newHead := g.calculateNewHead(snake)
 
 		// Проверяем столкновения
 		if g.isCollision(newHead) {
-			snake.IsAlive = false
 			g.HandleCollision(snake)
+			snake.IsAlive = false
+			snake.Body = []Point{}
 			continue
 		}
 
@@ -52,6 +51,7 @@ func (g *Game) isCollision(p Point) bool {
 	for _, snake := range g.State.Snakes {
 		for _, bodyPart := range snake.Body {
 			if bodyPart == p {
+				snake.Score++
 				return true
 			}
 		}
@@ -79,12 +79,17 @@ func (g *Game) removeFood(p Point) {
 	}
 }
 
-// HandleCollision обрабатывает столкновение змейки.
 func (g *Game) HandleCollision(snake *Snake) {
-	// Превращаем часть тела змейки в еду с вероятностью 0.5
-	for _, bodyPart := range snake.Body {
+	// Set the snake's role to Viewer, потому что она умерла
+	snake.Role = Viewer
+
+	// Convert body parts to food with 50% chance
+	for _, part := range snake.Body {
 		if g.Rand.Float64() < 0.5 {
-			g.State.Food = append(g.State.Food, bodyPart)
+			g.State.Food = append(g.State.Food, part)
 		}
 	}
+
+	// Remove the snake's body
+	snake.Body = nil
 }

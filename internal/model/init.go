@@ -27,7 +27,7 @@ func NewGame(width, height, foodStatic int) *Game {
 
 // GenerateFood генерирует еду на поле.
 func (g *Game) GenerateFood() {
-	foodCount := g.FoodStatic + len(g.State.Snakes)
+	foodCount := g.FoodStatic + g.CountAliveSnakes()
 	diff := 0
 	if len(g.State.Food) < foodCount {
 		diff = foodCount - len(g.State.Food)
@@ -67,4 +67,14 @@ func (g *Game) isOccupied(p Point) bool {
 	}
 
 	return false
+}
+
+func (g *Game) CountAliveSnakes() int {
+	count := 0
+	for _, snake := range g.State.Snakes {
+		if snake.IsAlive {
+			count++
+		}
+	}
+	return count
 }
